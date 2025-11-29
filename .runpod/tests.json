@@ -1,0 +1,22 @@
+{
+  "tests": [
+    {
+      "name": "encode_audio",
+      "input": {
+        "audio_base64": "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=",
+        "compute_umap": false
+      },
+      "timeout": 60000
+    }
+  ],
+  "config": {
+    "gpuTypeId": "NVIDIA L40",
+    "gpuCount": 1,
+    "allowedCudaVersions": [
+      "12.1",
+      "12.2",
+      "12.3",
+      "12.4"
+    ]
+  }
+}

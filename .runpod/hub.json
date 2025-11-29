@@ -1,0 +1,11 @@
+{
+  "title": "Stable Audio VAE Encoder",
+  "description": "Encode audio files to latent vectors using the Stable Audio VAE. Returns 64-dimensional latent embeddings and optional 3D UMAP projections for visualization.",
+  "type": "serverless",
+  "category": "audio",
+  "config": {
+    "runsOn": "GPU",
+    "containerDiskInGb": 20,
+    "env": []
+  }
+}
