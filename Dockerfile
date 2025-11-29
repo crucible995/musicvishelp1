@@ -50,28 +50,15 @@ RUN mkdir -p /models
 # Copy handler
 COPY rp_handler.py /app/rp_handler.py
 
-# Copy model config (small file)
-COPY stable_audio_2_0_vae.json /models/
-
-# Copy model checkpoint - may be LFS pointer or actual file
-COPY sao_vae_tune_100k_unwrapped.ckpt /models/
-
-# If the ckpt is an LFS pointer (small text file), fetch the real file
-RUN if [ $(stat -c%s /models/sao_vae_tune_100k_unwrapped.ckpt) -lt 1000 ]; then \
-    echo "LFS pointer detected, fetching actual file..." && \
-    cd /tmp && \
-    git clone --depth 1 https://github.com/crucible995/musicvishelp1.git repo && \
-    cd repo && \
-    git lfs pull --include="*.ckpt" && \
-    cp sao_vae_tune_100k_unwrapped.ckpt /models/ && \
-    cd / && rm -rf /tmp/repo; \
-    else \
-    echo "Model file looks complete ($(stat -c%s /models/sao_vae_tune_100k_unwrapped.ckpt) bytes)"; \
-    fi
+# Download VAE model from HuggingFace (official Stable Audio Open)
+RUN curl -L -o /models/model.ckpt \
+    "https://huggingface.co/stabilityai/stable-audio-open-1.0/resolve/main/vae_model.ckpt" && \
+    curl -L -o /models/model_config.json \
+    "https://huggingface.co/stabilityai/stable-audio-open-1.0/resolve/main/vae_model_config.json"
 
 # Set model paths
-ENV VAE_CONFIG_PATH=/models/stable_audio_2_0_vae.json
-ENV VAE_CKPT_PATH=/models/sao_vae_tune_100k_unwrapped.ckpt
+ENV VAE_CONFIG_PATH=/models/model_config.json
+ENV VAE_CKPT_PATH=/models/model.ckpt
 
 # Pre-download UMAP dependencies (numba compilation)
 RUN python -c "import umap; print('UMAP ready')"
