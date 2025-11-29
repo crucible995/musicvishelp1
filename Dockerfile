@@ -1,7 +1,7 @@
 # RunPod Serverless Worker for Stable Audio VAE
 # Optimized for L40 GPU with fast cold starts
 
-FROM nvidia/cuda:12.1-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
 
 # Set environment
 ENV DEBIAN_FRONTEND=noninteractive
