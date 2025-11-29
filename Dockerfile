@@ -1,37 +1,21 @@
 # RunPod Serverless Worker for Stable Audio VAE
-# Optimized for L40 GPU with fast cold starts
+# Uses official RunPod PyTorch base image (pre-cached on RunPod for fast starts)
 
-FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+FROM runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04
 
 # Set environment
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
-ENV PIP_NO_CACHE_DIR=1
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    python3.10 \
-    python3-pip \
-    python3.10-venv \
     ffmpeg \
     libsndfile1 \
-    git \
-    git-lfs \
-    curl \
-    && rm -rf /var/lib/apt/lists/* \
-    && git lfs install
-
-# Set Python 3.10 as default
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
-RUN update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install PyTorch with CUDA support
-RUN pip install --upgrade pip && \
-    pip install torch==2.1.2 torchaudio==2.1.2 --index-url https://download.pytorch.org/whl/cu121
-
-# Install RunPod SDK and dependencies
+# Install RunPod SDK
 RUN pip install runpod>=1.6.0
 
 # Install stable-audio-tools from GitHub
@@ -60,7 +44,7 @@ RUN curl -L -o /models/model.ckpt \
 ENV VAE_CONFIG_PATH=/models/model_config.json
 ENV VAE_CKPT_PATH=/models/model.ckpt
 
-# Pre-download UMAP dependencies (numba compilation)
+# Pre-compile UMAP/numba
 RUN python -c "import umap; print('UMAP ready')"
 
 # Entry point
