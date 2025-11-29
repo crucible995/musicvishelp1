@@ -16,7 +16,10 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     libsndfile1 \
     git \
-    && rm -rf /var/lib/apt/lists/*
+    git-lfs \
+    curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && git lfs install
 
 # Set Python 3.10 as default
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
@@ -47,9 +50,24 @@ RUN mkdir -p /models
 # Copy handler
 COPY rp_handler.py /app/rp_handler.py
 
-# Copy model files (baked into image for fast cold starts)
+# Copy model config (small file)
 COPY stable_audio_2_0_vae.json /models/
+
+# Copy model checkpoint - may be LFS pointer or actual file
 COPY sao_vae_tune_100k_unwrapped.ckpt /models/
+
+# If the ckpt is an LFS pointer (small text file), fetch the real file
+RUN if [ $(stat -c%s /models/sao_vae_tune_100k_unwrapped.ckpt) -lt 1000 ]; then \
+    echo "LFS pointer detected, fetching actual file..." && \
+    cd /tmp && \
+    git clone --depth 1 https://github.com/crucible995/musicvishelp1.git repo && \
+    cd repo && \
+    git lfs pull --include="*.ckpt" && \
+    cp sao_vae_tune_100k_unwrapped.ckpt /models/ && \
+    cd / && rm -rf /tmp/repo; \
+    else \
+    echo "Model file looks complete ($(stat -c%s /models/sao_vae_tune_100k_unwrapped.ckpt) bytes)"; \
+    fi
 
 # Set model paths
 ENV VAE_CONFIG_PATH=/models/stable_audio_2_0_vae.json
